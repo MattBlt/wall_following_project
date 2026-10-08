@@ -1,0 +1,67 @@
+[0.000000] (-) TimerEvent: {}
+[0.000645] (-) JobUnselected: {'identifier': 'wall_following'}
+[0.000867] (limo_wf_sim) JobQueued: {'identifier': 'limo_wf_sim', 'dependencies': OrderedDict()}
+[0.000918] (limo_wf_sim) JobStarted: {'identifier': 'limo_wf_sim'}
+[0.014838] (limo_wf_sim) JobProgress: {'identifier': 'limo_wf_sim', 'progress': 'cmake'}
+[0.015911] (limo_wf_sim) Command: {'cmd': ['/usr/bin/cmake', '/home/mattblt/ros2_ws/wall_following_project/src/limo_wf_sim', '-DCMAKE_INSTALL_PREFIX=/home/mattblt/ros2_ws/wall_following_project/install/limo_wf_sim'], 'cwd': '/home/mattblt/ros2_ws/wall_following_project/build/limo_wf_sim', 'env': OrderedDict([('SPACESHIP_ROOT', '/home/mattblt/.oh-my-zsh/custom/themes/spaceship-prompt'), ('HOSTNAME', 'omarchy'), ('GIT_ASKPASS', '/home/mattblt/.vscode-server/bin/04c0d99f4fb0d8afe6ce4f0c58e31e183ac3e4b1/extensions/git/dist/askpass.sh'), ('SHLVL', '2'), ('LD_LIBRARY_PATH', '/usr/local/lib:/usr/local/lib:/home/mattblt/ros2_ws/limo_ws/install/limo_msgs/lib:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib'), ('BROWSER', '/home/mattblt/.vscode-server/bin/04c0d99f4fb0d8afe6ce4f0c58e31e183ac3e4b1/bin/helpers/browser.sh'), ('HOME', '/home/mattblt'), ('OLDPWD', '/home/mattblt/ros2_ws/wall_following_project'), ('LESS', '-R'), ('TERM_PROGRAM_VERSION', '1.139.1'), ('VSCODE_IPC_HOOK_CLI', '/tmp/vscode-ipc-cfdd805d-af63-4b89-a54d-6386083e684a.sock'), ('ZSH', '/home/mattblt/.oh-my-zsh'), ('LSCOLORS', 'Gxfxcxdxbxegedabagacad'), ('PAGER', 'less'), ('ROS_PYTHON_VERSION', '3'), ('VSCODE_GIT_ASKPASS_MAIN', '/home/mattblt/.vscode-server/bin/04c0d99f4fb0d8afe6ce4f0c58e31e183ac3e4b1/extensions/git/dist/askpass-main.js'), ('VSCODE_GIT_ASKPASS_NODE', '/home/mattblt/.vscode-server/bin/04c0d99f4fb0d8afe6ce4f0c58e31e183ac3e4b1/node'), ('PYDEVD_DISABLE_FILE_VALIDATION', '1'), ('BUNDLED_DEBUGPY_PATH', '/home/mattblt/.vscode-server/extensions/ms-python.debugpy-2026.6.0-linux-x64/bundled/libs/debugpy'), ('VSCODE_PYTHON_AUTOACTIVATE_GUARD', '1'), ('container', 'podman'), ('REMOTE_CONTAINERS', 'true'), ('COLORTERM', 'truecolor'), ('ROS_DISTRO', 'humble'), ('COLCON_PREFIX_PATH', '/home/mattblt/ros2_ws/limo_ws/install'), ('REMOTE_CONTAINERS_IPC', '/tmp/vscode-remote-containers-ipc-8ffef56c-8d8f-4ce0-bb24-52d63a0a468d.sock'), ('LOGNAME', 'mattblt'), ('_', '/usr/bin/colcon'), ('TERMINFO_DIRS', '/usr/share/terminfo:/run/host/usr/share/terminfo'), ('ROS_VERSION', '2'), ('CLAUDE_CODE_SSE_PORT', '36353'), ('USER_ZDOTDIR', '/home/mattblt'), ('TERM', 'xterm-256color'), ('ROS_LOCALHOST_ONLY', '1'), ('PATH', '/usr/bin:/home/mattblt/.vscode-server/data/User/globalStorage/github.copilot-chat/debugCommand:/home/mattblt/.vscode-server/data/User/globalStorage/github.copilot-chat/copilotCli:/home/mattblt/.vscode-server/bin/04c0d99f4fb0d8afe6ce4f0c58e31e183ac3e4b1/bin/remote-cli:/opt/ros/humble/bin:/usr/bin:/home/mattblt/.local/share/../bin:/home/mattblt/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/home/mattblt/.vscode-server/extensions/ms-python.debugpy-2026.6.0-linux-x64/bundled/scripts/noConfigScripts'), ('REMOTE_CONTAINERS_SOCKETS', '["/tmp/.X11-unix/X1","/run/user/1000/gnupg/S.gpg-agent"]'), ('DISPLAY', ':1'), ('LANG', 'en_US.UTF-8'), ('VSCODE_DEBUGPY_ADAPTER_ENDPOINTS', '/home/mattblt/.vscode-server/extensions/ms-python.debugpy-2026.6.0-linux-x64/.noConfigDebugAdapterEndpoints/endpoint-3c4c6e7c5396e312.txt'), ('PYTHONSTARTUP', '/home/mattblt/.vscode-server/data/User/workspaceStorage/35e0c3b491dfdebfa8c4570ce729d22a/ms-python.python/pythonrc.py'), ('VSCODE_INJECTION', '1'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('TERM_PROGRAM', 'vscode'), ('VSCODE_GIT_IPC_HANDLE', '/tmp/vscode-git-d3ab28417a.sock'), ('AMENT_PREFIX_PATH', '/home/mattblt/ros2_ws/limo_ws/install/trajectory_skeleton:/home/mattblt/ros2_ws/limo_ws/install/trajectory_referee:/home/mattblt/ros2_ws/limo_ws/install/limo_wall_following:/home/mattblt/ros2_ws/limo_ws/install/limo_gazebosim:/home/mattblt/ros2_ws/limo_ws/install/limo_msgs:/home/mattblt/ros2_ws/limo_ws/install/limo_description:/home/mattblt/ros2_ws/limo_ws/install/example_codes:/opt/ros/humble'), ('ROS_DOMAIN_ID', '1'), ('REMOTE_CONTAINERS_DISPLAY_SOCK', '/tmp/.X11-unix/X1'), ('SHELL', 'zsh'), ('SPACESHIP_VERSION', '4.22.3'), ('VSCODE_GIT_ASKPASS_EXTRA_ARGS', ''), ('CONTAINER_ID', 'ubuntu22'), ('PWD', '/home/mattblt/ros2_ws/wall_following_project/build/limo_wf_sim'), ('COPILOT_DEBUG_NONCE', '10b9b5b0885afa0dcd7806de4a3339c9'), ('ZDOTDIR', '/home/mattblt'), ('PYTHONPATH', '/home/mattblt/ros2_ws/limo_ws/build/trajectory_skeleton:/home/mattblt/ros2_ws/limo_ws/install/trajectory_skeleton/lib/python3.10/site-packages:/home/mattblt/ros2_ws/limo_ws/build/trajectory_referee:/home/mattblt/ros2_ws/limo_ws/install/trajectory_referee/lib/python3.10/site-packages:/home/mattblt/ros2_ws/limo_ws/install/limo_gazebosim/local/lib/python3.10/dist-packages:/home/mattblt/ros2_ws/limo_ws/install/limo_msgs/local/lib/python3.10/dist-packages:/home/mattblt/ros2_ws/limo_ws/build/example_codes:/home/mattblt/ros2_ws/limo_ws/install/example_codes/lib/python3.10/site-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages'), ('COLCON', '1'), ('SPACESHIP_CONFIG', '/home/mattblt/.zsh/spaceship_config.zsh'), ('CMAKE_PREFIX_PATH', '/home/mattblt/ros2_ws/limo_ws/install/limo_wall_following:/home/mattblt/ros2_ws/limo_ws/install/limo_gazebosim:/home/mattblt/ros2_ws/limo_ws/install/limo_msgs:/home/mattblt/ros2_ws/limo_ws/install/limo_description'), ('LIBGL_DRIVERS_PATH', '/usr/local/lib/dri')]), 'shell': False}
+[0.098129] (-) TimerEvent: {}
+[0.198672] (-) TimerEvent: {}
+[0.299322] (-) TimerEvent: {}
+[0.370329] (limo_wf_sim) StdoutLine: {'line': b'-- The C compiler identification is GNU 11.4.0\n'}
+[0.399537] (-) TimerEvent: {}
+[0.500269] (-) TimerEvent: {}
+[0.536815] (limo_wf_sim) StdoutLine: {'line': b'-- The CXX compiler identification is GNU 11.4.0\n'}
+[0.560275] (limo_wf_sim) StdoutLine: {'line': b'-- Detecting C compiler ABI info\n'}
+[0.600419] (-) TimerEvent: {}
+[0.700862] (-) TimerEvent: {}
+[0.715048] (limo_wf_sim) StdoutLine: {'line': b'-- Detecting C compiler ABI info - done\n'}
+[0.728642] (limo_wf_sim) StdoutLine: {'line': b'-- Check for working C compiler: /usr/bin/cc - skipped\n'}
+[0.729785] (limo_wf_sim) StdoutLine: {'line': b'-- Detecting C compile features\n'}
+[0.732464] (limo_wf_sim) StdoutLine: {'line': b'-- Detecting C compile features - done\n'}
+[0.740305] (limo_wf_sim) StdoutLine: {'line': b'-- Detecting CXX compiler ABI info\n'}
+[0.801096] (-) TimerEvent: {}
+[0.891846] (limo_wf_sim) StdoutLine: {'line': b'-- Detecting CXX compiler ABI info - done\n'}
+[0.901349] (-) TimerEvent: {}
+[0.904022] (limo_wf_sim) StdoutLine: {'line': b'-- Check for working CXX compiler: /usr/bin/c++ - skipped\n'}
+[0.904532] (limo_wf_sim) StdoutLine: {'line': b'-- Detecting CXX compile features\n'}
+[0.905322] (limo_wf_sim) StdoutLine: {'line': b'-- Detecting CXX compile features - done\n'}
+[0.924319] (limo_wf_sim) StdoutLine: {'line': b'-- Found ament_cmake: 1.3.14 (/opt/ros/humble/share/ament_cmake/cmake)\n'}
+[1.001502] (-) TimerEvent: {}
+[1.102128] (-) TimerEvent: {}
+[1.202719] (-) TimerEvent: {}
+[1.241564] (limo_wf_sim) StdoutLine: {'line': b'-- Found Python3: /usr/bin/python3 (found version "3.10.12") found components: Interpreter \n'}
+[1.302942] (-) TimerEvent: {}
+[1.403598] (-) TimerEvent: {}
+[1.504310] (-) TimerEvent: {}
+[1.604810] (-) TimerEvent: {}
+[1.664905] (limo_wf_sim) StderrLine: {'line': b"Error parsing '/home/mattblt/ros2_ws/wall_following_project/src/limo_wf_sim/package.xml':\n"}
+[1.665372] (limo_wf_sim) StderrLine: {'line': b'Traceback (most recent call last):\n'}
+[1.665499] (limo_wf_sim) StderrLine: {'line': b'  File "/opt/ros/humble/share/ament_cmake_core/cmake/core/package_xml_2_cmake.py", line 150, in <module>\n'}
+[1.665584] (limo_wf_sim) StderrLine: {'line': b'    main()\n'}
+[1.665664] (limo_wf_sim) StderrLine: {'line': b'  File "/opt/ros/humble/share/ament_cmake_core/cmake/core/package_xml_2_cmake.py", line 53, in main\n'}
+[1.665751] (limo_wf_sim) StderrLine: {'line': b'    raise e\n'}
+[1.665830] (limo_wf_sim) StderrLine: {'line': b'  File "/opt/ros/humble/share/ament_cmake_core/cmake/core/package_xml_2_cmake.py", line 49, in main\n'}
+[1.665913] (limo_wf_sim) StderrLine: {'line': b'    package = parse_package_string(\n'}
+[1.665994] (limo_wf_sim) StderrLine: {'line': b'  File "/usr/lib/python3/dist-packages/catkin_pkg/package.py", line 788, in parse_package_string\n'}
+[1.669560] (limo_wf_sim) StderrLine: {'line': b'    pkg.validate(warnings=warnings)\n'}
+[1.669944] (limo_wf_sim) StderrLine: {'line': b'  File "/usr/lib/python3/dist-packages/catkin_pkg/package.py", line 330, in validate\n'}
+[1.670037] (limo_wf_sim) StderrLine: {'line': b"    raise InvalidPackage('\\n'.join(errors), self.filename)\n"}
+[1.670118] (limo_wf_sim) StderrLine: {'line': b"catkin_pkg.package.InvalidPackage: Error(s) in package '/home/mattblt/ros2_ws/wall_following_project/src/limo_wf_sim/package.xml':\n"}
+[1.670200] (limo_wf_sim) StderrLine: {'line': b'Invalid email "tua@email" for person "Mattia"\n'}
+[1.682019] (limo_wf_sim) StderrLine: {'line': b'\x1b[31mCMake Error at /opt/ros/humble/share/ament_cmake_core/cmake/core/ament_package_xml.cmake:95 (message):\n'}
+[1.682630] (limo_wf_sim) StderrLine: {'line': b'  execute_process(/usr/bin/python3\n'}
+[1.682795] (limo_wf_sim) StderrLine: {'line': b'  /opt/ros/humble/share/ament_cmake_core/cmake/core/package_xml_2_cmake.py\n'}
+[1.682898] (limo_wf_sim) StderrLine: {'line': b'  /home/mattblt/ros2_ws/wall_following_project/src/limo_wf_sim/package.xml\n'}
+[1.682993] (limo_wf_sim) StderrLine: {'line': b'  /home/mattblt/ros2_ws/wall_following_project/build/limo_wf_sim/ament_cmake_core/package.cmake)\n'}
+[1.683081] (limo_wf_sim) StderrLine: {'line': b'  returned error code 1\n'}
+[1.683168] (limo_wf_sim) StderrLine: {'line': b'Call Stack (most recent call first):\n'}
+[1.683291] (limo_wf_sim) StderrLine: {'line': b'  /opt/ros/humble/share/ament_cmake_core/cmake/core/ament_package_xml.cmake:49 (_ament_package_xml)\n'}
+[1.683384] (limo_wf_sim) StderrLine: {'line': b'  /opt/ros/humble/share/ament_cmake_core/cmake/core/ament_package.cmake:63 (ament_package_xml)\n'}
+[1.683479] (limo_wf_sim) StderrLine: {'line': b'  CMakeLists.txt:12 (ament_package)\n'}
+[1.683567] (limo_wf_sim) StderrLine: {'line': b'\n'}
+[1.683657] (limo_wf_sim) StderrLine: {'line': b'\x1b[0m\n'}
+[1.683742] (limo_wf_sim) StdoutLine: {'line': b'-- Configuring incomplete, errors occurred!\n'}
+[1.683853] (limo_wf_sim) StdoutLine: {'line': b'See also "/home/mattblt/ros2_ws/wall_following_project/build/limo_wf_sim/CMakeFiles/CMakeOutput.log".\n'}
+[1.692657] (limo_wf_sim) CommandEnded: {'returncode': 1}
+[1.694100] (limo_wf_sim) JobEnded: {'identifier': 'limo_wf_sim', 'rc': 1}
+[1.704853] (-) EventReactorShutdown: {}
