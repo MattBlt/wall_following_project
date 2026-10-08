@@ -1,2 +1,0 @@
-Invoking command in '/home/mattblt/ros2_ws/wall_following_project/build/limo_wf_sim': /usr/bin/cmake /home/mattblt/ros2_ws/wall_following_project/src/limo_wf_sim -DCMAKE_INSTALL_PREFIX=/home/mattblt/ros2_ws/wall_following_project/install/limo_wf_sim
-Invoked command in '/home/mattblt/ros2_ws/wall_following_project/build/limo_wf_sim' returned '1': /usr/bin/cmake /home/mattblt/ros2_ws/wall_following_project/src/limo_wf_sim -DCMAKE_INSTALL_PREFIX=/home/mattblt/ros2_ws/wall_following_project/install/limo_wf_sim
