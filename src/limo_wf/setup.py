@@ -1,10 +1,10 @@
 from setuptools import find_packages, setup
 
-package_name = 'wall_following'
+package_name = 'limo_wf'
 
 setup(
     name=package_name,
-    version='1.0.0',
+    version='0.0.0',
     packages=find_packages(exclude=['test']),
     data_files=[
         ('share/ament_index/resource_index/packages',
@@ -15,7 +15,7 @@ setup(
     zip_safe=True,
     maintainer='mattblt',
     maintainer_email='baltieri.mattia04@gmail.com',
-    description='Wall following for the AgileX LIMO on ROS 2: LiDAR-based wall detection, local costmap and angle/speed controller, with optional EKF localization.',
+    description='TODO: Package description',
     license='Apache-2.0',
     extras_require={
         'test': [
@@ -24,6 +24,10 @@ setup(
     },
     entry_points={
         'console_scripts': [
+            'wall_detection = limo_wf.wall_detection_node:main',
+            'local_grid = limo_wf.local_grid_node:main',
+            'wall_follow_controller = limo_wf.wall_follow_controller_node:main',
+            'return_to_start = limo_wf.return_to_start_node:main',
         ],
     },
 )
