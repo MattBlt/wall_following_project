@@ -1,0 +1,14 @@
+# Nomi dei topic e dei frame in simulazione Gazebo.
+
+topics:
+    scan:               /scan
+    odom:               /odom
+    imu:                /imu
+    cmd_vel:            /cmd_vel
+    depth_points:       /limo_camera/camera_points
+
+frames:
+    base:               base_link
+    odom:               odom
+    laser:              laser_link
+    camera:             depth_link

@@ -1,0 +1,14 @@
+# Nomi dei topic e dei frame sul robot LIMO reale.
+
+topics:
+    scan:               /scan
+    odom:               /odom
+    imu:                /imu
+    cmd_vel:            /cmd_vel
+    depth_points:       /camera/depth/points
+
+frames:
+    base:               base_link
+    odom:               odom
+    laser:              laser_link
+    camera:             camera_depth_frame
