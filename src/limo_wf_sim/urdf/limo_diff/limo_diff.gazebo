@@ -15,27 +15,31 @@
     <xacro:gazebo_imu frame_prefix="imu" />
 
 
-      <gazebo reference="front_left_wheel_link">
-        <mu1>0.5</mu1>
-        <mu2>0.5</mu2>
+    <gazebo reference="front_left_wheel_link">
+        <fdir1>0 0 1</fdir1>
+        <mu1>0.1</mu1>
+        <mu2>1.0</mu2>
         <kp>1000.0</kp>
         <kd>1000.0</kd>
     </gazebo>
     <gazebo reference="front_right_wheel_link">
-        <mu1>0.5</mu1>
-        <mu2>0.5</mu2>
+        <fdir1>0 0 1</fdir1>
+        <mu1>0.1</mu1>
+        <mu2>1.0</mu2>
         <kp>1000.0</kp>
         <kd>1000.0</kd>
     </gazebo>
     <gazebo reference="rear_left_wheel_link">
-        <mu1>0.5</mu1>
-        <mu2>0.5</mu2>
+        <fdir1>0 0 1</fdir1>
+        <mu1>0.1</mu1>
+        <mu2>1.0</mu2>
         <kp>1000.0</kp>
         <kd>1000.0</kd>
     </gazebo>
     <gazebo reference="rear_right_wheel_link">
-        <mu1>0.5</mu1>
-        <mu2>0.5</mu2>
+        <fdir1>0 0 1</fdir1>
+        <mu1>0.1</mu1>
+        <mu2>1.0</mu2>
         <kp>1000.0</kp>
         <kd>1000.0</kd>
     </gazebo>
@@ -50,6 +54,8 @@
             <left_joint>rear_left_wheel</left_joint>
             <right_joint>rear_right_wheel</right_joint>
             <wheel_separation>0.172</wheel_separation>
+            <wheel_separation>0.172</wheel_separation>
+            <wheel_diameter>0.09</wheel_diameter>
             <wheel_diameter>0.09</wheel_diameter>
             <max_wheel_torque>20</max_wheel_torque>
             <max_wheel_acceleration>1.0</max_wheel_acceleration>

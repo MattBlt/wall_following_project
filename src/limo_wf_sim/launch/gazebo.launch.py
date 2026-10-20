@@ -48,4 +48,6 @@ def generate_launch_description():
         Node(package='limo_wf_sim', executable='twist_watchdog.py', name='twist_watchdog'),
         TimerAction(period=8.0, condition=UnlessCondition(LaunchConfiguration('headless')), actions=[
             ExecuteProcess(cmd=['gz', 'camera', '-c', 'user_camera', '-f', 'limo_gazebo'])]),
+        Node(package='limo_wf_sim', executable='odom_noise.py', name='odom_noise',
+             parameters=[{'use_sim_time': True}]),
     ])
