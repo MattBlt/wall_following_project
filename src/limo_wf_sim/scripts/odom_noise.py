@@ -4,25 +4,31 @@ Inietta un errore realistico sull'odometria simulata.
 
 Due meccanismi distinti, parametrizzati separatamente:
 
-1. Rumore di lettura dell'encoder (errore casuale, media nulla).
-   Encoder ottico a n tacche/giro, risoluzione 2*pi/n rad.
-   La lettura e' perturbata da una pmf triangolare:
+1. Rumore di lettura dell'encoder (errore casuale, limitato).
+   Encoder ottico a n tacche/giro, risoluzione 2*pi/n rad.  La LETTURA
+   del conteggio cumulativo e' perturbata da una pmf triangolare:
        P(0) = 2/5, P(+-1) = 1/5, P(+-2) = 1/10
-   a media nulla e varianza 1.2 tacche^2, approssimata con una
-   gaussiana N(0, 1.2) tacche.
+   a media nulla e varianza 1.2 tacche^2, approssimata con una gaussiana
+   N(0, 1.2) tacche come da indicazione del relatore.
+
+   Il rumore si applica al CONTEGGIO CUMULATIVO, non all'incremento:
+   l'incremento usato per l'integrazione e' la differenza fra due letture
+   consecutive, quindi gli errori di lettura in gran parte si elidono e
+   l'errore di posizione che ne deriva resta limitato.  Perturbare
+   direttamente gli incrementi produrrebbe un random walk, cioe' deriva
+   illimitata anche a robot fermo: non e' il comportamento di un encoder.
 
 2. Errore sistematico di calibrazione (bias, non si media).
    Le due ruote hanno raggio effettivo diverso da quello nominale:
        R_sx = R*(1+eps),  R_dx = R*(1-eps)
-   Il software integra con R nominale, quindi su traiettoria
-   rettilinea accumula una rotazione spuria. E' l'errore
-   sistematico classico dell'odometria differenziale (UMBmark,
-   Borenstein & Feng 1996).
+   Il software integra con R nominale, quindi su traiettoria rettilinea
+   accumula una rotazione spuria.  E' l'errore sistematico classico
+   dell'odometria differenziale (UMBmark, Borenstein & Feng 1996), ed e'
+   la componente che domina la deriva su percorsi lunghi.
 
 Ingresso:  /odom        ground truth dal plugin Gazebo
 Uscita:    /odom_noisy  odometria come la misurerebbe il robot
 """
-
 import math
 
 import numpy as np
@@ -58,18 +64,27 @@ class OdomNoise(Node):
         self.L = self.get_parameter('wheel_separation').value
 
         self.tick = 2.0 * math.pi / self.n          # rad/tacca
+        self.arc_per_tick = self.R * self.tick      # m/tacca
         self.rng = np.random.default_rng(self.get_parameter('seed').value)
 
         # posa stimata, parte dalla stessa origine del ground truth
         self.x = self.y = self.th = 0.0
         self.prev = None
+        self.cum = [0.0, 0.0]       # archi veri cumulati, sinistra e destra
+        self.last_read = [0, 0]     # ultime letture dell'encoder, in tacche
 
         self.create_subscription(Odometry, 'odom', self.on_odom, 10)
         self.pub = self.create_publisher(Odometry, 'odom_noisy', 10)
 
         self.get_logger().info(
             f'odom_noise: n={self.n} tacche/giro ({math.degrees(self.tick):.3f} deg), '
-            f'sigma={self.tick_sigma:.3f} tacche, bias eps={self.eps*100:.2f}%')
+            f'sigma={self.tick_sigma:.3f} tacche sulla lettura, '
+            f'bias eps={self.eps * 100:.2f}%')
+
+    def read_encoder(self, cumulative_arc):
+        """Lettura dell'encoder: conteggio cumulativo quantizzato e perturbato."""
+        ticks = cumulative_arc / self.arc_per_tick
+        return int(round(ticks + self.rng.normal(0.0, self.tick_sigma)))
 
     def on_odom(self, msg: Odometry):
         x, y = msg.pose.pose.position.x, msg.pose.pose.position.y
@@ -85,39 +100,34 @@ class OdomNoise(Node):
 
         # incremento vero, nel frame del robot
         ds = math.hypot(x - px, y - py)
-        # segno: avanti se lo spostamento e' concorde all'orientamento
         if (x - px) * math.cos(pth) + (y - py) * math.sin(pth) < 0:
             ds = -ds
         dth = math.atan2(math.sin(th - pth), math.cos(th - pth))
 
-        # cinematica differenziale inversa: archi delle due ruote
+        # cinematica differenziale inversa: archi veri delle due ruote
         d_left = ds - dth * self.L / 2.0
         d_right = ds + dth * self.L / 2.0
 
         # --- 1. bias: il raggio effettivo non e' quello nominale ---
-        d_left *= (1.0 + self.eps)
-        d_right *= (1.0 - self.eps)
+        self.cum[0] += d_left * (1.0 + self.eps)
+        self.cum[1] += d_right * (1.0 - self.eps)
 
-        # --- 2. rumore di lettura, in tacche ---
-        d_left = self.quantize(d_left)
-        d_right = self.quantize(d_right)
+        # --- 2. lettura degli encoder, e incremento come differenza ---
+        read_l = self.read_encoder(self.cum[0])
+        read_r = self.read_encoder(self.cum[1])
+        d_left = (read_l - self.last_read[0]) * self.arc_per_tick
+        d_right = (read_r - self.last_read[1]) * self.arc_per_tick
+        self.last_read = [read_l, read_r]
 
         # integrazione con i parametri NOMINALI: e' quello che fa il robot
         ds_m = (d_right + d_left) / 2.0
         dth_m = (d_right - d_left) / self.L
 
-        self.th += dth_m
-        self.th = math.atan2(math.sin(self.th), math.cos(self.th))
+        self.th = math.atan2(math.sin(self.th + dth_m), math.cos(self.th + dth_m))
         self.x += ds_m * math.cos(self.th)
         self.y += ds_m * math.sin(self.th)
 
         self.publish(msg.header)
-
-    def quantize(self, arc):
-        """Arco lineare -> tacche -> rumore -> arco lineare."""
-        ticks = arc / (self.R * self.tick)
-        ticks = round(ticks + self.rng.normal(0.0, self.tick_sigma))
-        return ticks * self.R * self.tick
 
     def publish(self, header):
         out = Odometry()
