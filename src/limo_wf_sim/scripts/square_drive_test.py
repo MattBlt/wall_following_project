@@ -8,12 +8,15 @@ valore nominale, ogni rotazione quando lo yaw e' variato di 90 gradi.
 
 La catena chiusa e' necessaria perche' il LIMO differenziale ha quattro
 ruote rigide: ruotando sul posto striscia lateralmente, e la velocita'
-angolare reale risulta circa meta' di quella comandata. Un percorso a
+angolare reale risulta circa il 78% di quella comandata. Un percorso a
 tempo produrrebbe rotazioni molto minori di 90 gradi.
 
 Chiudere sul ground truth non falsa la misura: l'errore caratterizzato
 e' quello di /odom_noisy rispetto a /odom, e il metodo UMBmark richiede
 che il percorso vero sia un quadrato il piu' esatto possibile.
+
+Il nodo TERMINA quando il percorso e' completo, cosi' puo' essere usato
+dentro uno script batch.
 """
 import math
 
@@ -43,7 +46,7 @@ class SquareDrive(Node):
         self.declare_parameter('laps', 1)
         self.declare_parameter('pause', 1.0)             # s fra i segmenti
         self.declare_parameter('dist_tol', 0.01)         # m
-        self.declare_parameter('yaw_tol', 0.01)          # rad
+        self.declare_parameter('yaw_tol', 0.035)         # rad, ~2 gradi
 
         self.L = self.get_parameter('side_length').value
         self.v = self.get_parameter('linear_speed').value
@@ -66,6 +69,7 @@ class SquareDrive(Node):
         self.acc_yaw = 0.0        # rotazione accumulata nello step
         self.idx = 0
         self.t_entry = None
+        self.done = False         # <- fa uscire il ciclo in main()
 
         self.create_subscription(Odometry, 'odom', self.on_odom, 10)
         self.pub = self.create_publisher(Twist, 'cmd_vel', 10)
@@ -86,19 +90,19 @@ class SquareDrive(Node):
         self.pub.publish(Twist())
 
     def tick(self):
-        if self.pose is None:
+        if self.pose is None or self.done:
             return
 
         if self.idx >= len(self.steps):
             self.stop()
             self.get_logger().info('percorso completato')
             self.timer.cancel()
+            self.done = True
             return
 
         kind, target = self.steps[self.idx]
         x, y, yaw = self.pose
 
-        # ingresso in un nuovo step: fissa il riferimento
         if self.ref is None:
             self.ref = (x, y, yaw)
             self.acc_yaw = 0.0
@@ -108,22 +112,21 @@ class SquareDrive(Node):
         msg = Twist()
 
         if kind == STRAIGHT:
-            done = math.hypot(x - rx, y - ry)
-            if done >= target - self.dist_tol:
+            if math.hypot(x - rx, y - ry) >= target - self.dist_tol:
                 self.next_step()
                 return
             msg.linear.x = self.v
 
         elif kind == TURN:
-            # accumula l'incremento di yaw, cosi' il wrap a +-pi non rompe il conto
+            # accumula l'incremento, cosi' il wrap a +-pi non rompe il conto
             self.acc_yaw += math.atan2(math.sin(yaw - ryaw), math.cos(yaw - ryaw))
             self.ref = (rx, ry, yaw)
             residuo = target - self.acc_yaw
             if abs(residuo) <= self.yaw_tol:
                 self.next_step()
                 return
-            # rallenta in prossimita' del bersaglio, per limitare la sovraelongazione
-            cmd = max(0.08, min(self.w, 2.0 * abs(residuo)))
+            # rallenta vicino al bersaglio, ma mai sotto la soglia di attrito
+            cmd = max(0.25, min(self.w, 2.0 * abs(residuo)))
             msg.angular.z = math.copysign(cmd, residuo)
 
         else:  # PAUSE
@@ -143,11 +146,17 @@ def main():
     rclpy.init()
     node = SquareDrive()
     try:
-        rclpy.spin(node)
+        # si esce appena il percorso e' completo: il nodo non resta
+        # vivo a vuoto, cosi' puo' essere usato in uno script batch
+        while rclpy.ok() and not node.done:
+            rclpy.spin_once(node, timeout_sec=0.1)
     except KeyboardInterrupt:
         pass
     finally:
-        node.stop()
+        try:
+            node.stop()
+        except Exception:
+            pass          # il contesto puo' essere gia' chiuso
         node.destroy_node()
         if rclpy.ok():
             rclpy.shutdown()

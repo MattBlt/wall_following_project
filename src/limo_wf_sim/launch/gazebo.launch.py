@@ -7,6 +7,7 @@ from launch.conditions import UnlessCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import Command, LaunchConfiguration
 from launch_ros.actions import Node
+from launch_ros.parameter_descriptions import ParameterValue
 
 
 def generate_launch_description():
@@ -26,6 +27,7 @@ def generate_launch_description():
         DeclareLaunchArgument('z', default_value='0.20'),
         DeclareLaunchArgument('yaw', default_value='0.0'),
         DeclareLaunchArgument('headless', default_value='False'),
+        DeclareLaunchArgument('noise_seed', default_value='0'),
     ]
 
     sim_time = {'use_sim_time': True}
@@ -49,5 +51,7 @@ def generate_launch_description():
         TimerAction(period=8.0, condition=UnlessCondition(LaunchConfiguration('headless')), actions=[
             ExecuteProcess(cmd=['gz', 'camera', '-c', 'user_camera', '-f', 'limo_gazebo'])]),
         Node(package='limo_wf_sim', executable='odom_noise.py', name='odom_noise',
-             parameters=[{'use_sim_time': True}]),
+             parameters=[{**sim_time,
+                          'noise_seed': ParameterValue(LaunchConfiguration('noise_seed'),
+                                                 value_type=int)}]),
     ])

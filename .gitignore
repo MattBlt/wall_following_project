@@ -1,6 +1,10 @@
 architettura_tesi_wall_following_slam_finale.png
-build
-install
-log
-__pycache__
+build/
+install/
+log/
+__pycache__/
 *.pyc
+analisi/.venv/
+analisi/dati/**/*.db3
+analisi/dati/**/metadata.yaml
+analisi/dati/*.log
