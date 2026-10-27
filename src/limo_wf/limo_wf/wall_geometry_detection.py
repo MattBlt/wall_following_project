@@ -16,10 +16,10 @@ class DetectionParams:
     """Parametri del rilevamento. I default servono ai test: sul robot
     arrivano dal YAML tramite il nodo."""
 
-    side: int = SIDE_RIGHT                          # lato seguito
+    side: int = SIDE_LEFT                           # lato seguito
 
     # settore laterale da cui estrarre i segmenti (centrato a +-90 gradi)
-    sector_half_width: float = math.radians(60.0)   # side_sector_mask
+    sector_half_width: float = math.radians(85.0)   # side_sector_mask
 
     # segmentazione
     gap_threshold: float = 0.20                     # split_runs            [m]
@@ -34,6 +34,9 @@ class DetectionParams:
 
     # corridoio frontale: LIMO largo ~0.22 m
     front_half_width: float = 0.20                  # front_clearance       [m]
+
+    # isteresi sulla scelta della parete
+    switch_margin: float = 0.10                     # WallTracker           [m]
 
 
 @dataclass
@@ -256,6 +259,54 @@ def select_wall(segmants: Sequence[Segment], params: DetectionParams) -> Optiona
     return best
 
 
+class WallTracker:
+    """Scelta della parete con isteresi.
+
+    `select_wall` e' senza memoria: al gomito il robot e' equidistante dalle due
+    pareti, i candidati si equivalgono e il rumore decide a ogni scansione,
+    facendo saltare l'angolo di 90 gradi avanti e indietro. Qui la parete in
+    corso resta scelta finche' un'altra non e' piu' vicina di switch_margin.
+    """
+
+    def __init__(self, params: DetectionParams):
+        self.params = params
+        self.current = None                  # (normale, offset) della scelta precedente
+
+    def reset(self):
+        self.current = None
+
+    def _is_current(self, seg: Segment) -> bool:
+        """Riconosce, fra una scansione e l'altra, la parete che si stava seguendo."""
+        if self.current is None:
+            return False
+        n, off = self.current
+        return float(seg.normal @ n) > 0.9 and abs(seg.offset - off) < 0.20
+
+    def select(self, segments: Sequence[Segment]) -> Optional[Segment]:
+        origin = np.zeros(2)
+        want = -1.0 if self.params.side == SIDE_RIGHT else 1.0
+        cands = []
+        for seg in segments:
+            if seg.normal[1] * want <= 0:
+                continue
+            if abs(seg.angle) > self.params.max_wall_angle:
+                continue
+            if seg.offset > self.params.max_wall_distance:
+                continue
+            cands.append((point_segment_distance(origin, seg.p_start, seg.p_end), seg))
+
+        if not cands:
+            self.current = None
+            return None
+
+        best_d, best = min(cands, key=lambda c: c[0])
+        inc = next(((d, s) for d, s in cands if self._is_current(s)), None)
+        if inc is not None and inc[1] is not best and best_d > inc[0] - self.params.switch_margin:
+            best = inc[1]
+        self.current = (best.normal.copy(), float(best.offset))
+        return best
+
+
 def front_clearance(points: np.ndarray, half_width: float) -> float:
     """Distanza in x del primo ostacolo nel corridoio |y| <= half_width davanti al robot"""
 
@@ -265,13 +316,14 @@ def front_clearance(points: np.ndarray, half_width: float) -> float:
     return float(ahead[:, 0].min()) if len(ahead) else math.inf
 
 
-def detect_wall(points: np.ndarray, params: DetectionParams) -> WallEstimate:
+def detect_wall(points: np.ndarray, params: DetectionParams,
+                selector: Optional[WallTracker] = None) -> WallEstimate:
     """Dai punti della scansione (in base_link) alla stima della parete seguita"""
 
     front = front_clearance(points, params.front_half_width)
     lateral = points[side_sector_mask(points, params.side, params.sector_half_width)]
     segments = extract_segments(lateral, params)
-    wall = select_wall(segments, params)
+    wall = selector.select(segments) if selector is not None else select_wall(segments, params)
     if wall is None:
         return WallEstimate(detected=False, front_distance=front, segments=segments)
     return WallEstimate(

@@ -1,0 +1,59 @@
+# Parametri di wall_detection.
+# I valori non sono scelti a occhio: ognuno ha dietro una misura o un calcolo,
+# annotati qui perche' servono in sede di scrittura.
+#
+# LiDAR misurato in simulazione (26/10/2026):
+#   360 raggi, apertura 229.2 gradi, passo 0.638 gradi, portata 0.12-8.00 m,
+#   frequenza 7.991 Hz, rumore sulla singola lettura 8.4 mm.
+
+wall_detection:
+  ros__parameters:
+
+    # --- lato seguito e frame
+    side: left                    # 'left' | 'right'. Decide anche il verso del giro:
+                                  # muro a sinistra -> giro orario.
+    base_frame: base_link         # in questo modello e' padre di base_footprint
+    laser_frame: ''               # vuoto = usa il frame dichiarato dallo scan
+
+    # --- settore laterale
+    # 85 gradi e non 60: con un'apertura di 229 gradi il settore voluto viene
+    # tagliato dal campo visivo, e a 60 si vedeva solo 0.71 m di muro. A 85 se ne
+    # vedono 2.67 e l'errore sull'angolo scende da 0.18 a 0.04 gradi. Oltre gli 85
+    # non cambia niente: a incidenza radente i punti si diradano e gap_threshold
+    # chiude il tratto.
+    sector_half_width_deg: 85.0
+
+    # --- segmentazione
+    gap_threshold: 0.20           # [m] spaziatura fra punti a 2 m: 2.2 cm. Dieci
+                                  # volte tanto taglia solo i salti veri.
+                                  # ATTENZIONE: fa anche da limitatore della
+                                  # lunghezza utile del segmento (vedi sopra).
+    split_threshold: 0.05         # [m] ~6 sigma del rumore misurato (8.4 mm)
+    merge_threshold: 0.025        # [m] ~3 sigma. Criterio su RMS, non sul punto
+                                  # peggiore: il massimo cresce come sqrt(2 ln N)
+                                  # e una soglia fissa non andrebbe bene per tutte
+                                  # le lunghezze.
+    min_points: 8                 # intero, non 8.0
+    min_segment_length: 0.30      # [m] scarta spigoli e oggetti piccoli.
+                                  # ATTENZIONE: decide anche la curva piu' stretta
+                                  # seguibile (~1 m di raggio).
+
+    # --- plausibilita' della parete seguita
+    max_wall_distance: 2.0        # [m]
+    max_wall_angle_deg: 60.0      # oltre: parete frontale, non laterale
+
+    # --- isteresi sulla scelta
+    # Senza, al gomito il robot e' equidistante dalle due pareti e la scelta si
+    # ribaltava a ogni scansione (angolo che saltava di 90 gradi). A 0 si riproduce
+    # il comportamento vecchio: utile per il confronto prima/dopo in tesi.
+    switch_margin: 0.10           # [m]
+
+    # --- corridoio frontale
+    front_half_width: 0.20        # [m] LIMO largo ~0.22 m, piu' margine.
+                                  # front_distance e' leggermente pessimista: e' il
+                                  # minimo su molti punti rumorosi, quindi cade
+                                  # sotto il valore vero. Per un anello di velocita'
+                                  # e' il verso giusto in cui sbagliare.
+
+    # --- debug
+    publish_markers: true         # MarkerArray su wall_markers per RViz

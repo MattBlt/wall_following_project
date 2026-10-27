@@ -20,13 +20,15 @@ def launch_setup(context, *args, **kwargs):
     t, fr = cfg['topics'], cfg['frames']
 
     common = {'use_sim_time': use_sim}
+    wall_detection_cfg = os.path.join(pkg, 'config', 'wall_detection.yaml')
 
     return [
         Node(package='limo_wf', executable='wall_detection', name='wall_detection',
              output='screen',
-             parameters=[common, {'laser_frame': fr['laser']}],
+                          parameters=[wall_detection_cfg, common, {'laser_frame': fr['laser']}],
              remappings=[('scan', t['scan']),
-                         ('wall_info', '/wall_info')]),
+                         ('wall_info', '/wall_info'),
+                         ('wall_markers', '/wall_markers')]),
     ]
 
 
