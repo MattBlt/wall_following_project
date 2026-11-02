@@ -1,0 +1,33 @@
+# Parametri dell'anello sull'angolo (fase 1, punto 2).
+#
+# I guadagni non si impostano direttamente: si sceglie il comportamento voluto
+# dell'anello chiuso (omega_n e zeta) e il nodo ricava
+#     K_d = omega_n^2 / v        K_psi = 2 * zeta * omega_n
+# Dinamica risultante:  e'' + K_psi*e' + v*K_d*e = 0
+
+wall_follow_controller:
+  ros__parameters:
+
+    enabled: false            # parte fermo: abilitare a mano quando si e' pronti
+                              #   ros2 param set /wall_follow_controller enabled true
+
+    d_ref: 0.30               # [m] distanza di riferimento dalla parete
+    v_nominal: 0.20           # [m/s] costante nel punto 2; il punto 3 la modulera'
+
+    omega_n: 1.0              # [rad/s] banda dell'anello chiuso. A 8 Hz di
+                              # campionamento e' un fattore 50: ampio margine.
+    zeta: 1.0                 # smorzamento critico: nessun sorpasso.
+                              # 0.7 e' piu' rapido ma supera del 6%.
+
+    max_omega: 1.5            # [rad/s] saturazione del comando
+    v_min: 0.05               # [m/s] K_d = omega_n^2/v diverge per v->0
+
+    watchdog_timeout: 0.5     # [s] quattro scansioni perse a 8 Hz. Oltre, il robot
+                              # si ferma invece di proseguire con l'ultimo comando.
+
+    # --- ricerca della parete dopo uno spigolo
+    v_search: 0.12            # [m/s]
+    advance_distance: 0.35    # [m] tratto dritto prima di iniziare a ruotare
+    omega_turn: 0.6           # [rad/s] rotazione sul posto (spigolo concavo)
+    front_stop: 0.45          # [m] sotto cui si considera di avere un muro davanti
+    max_search_yaw: 2.62      # [rad] ~150 gradi

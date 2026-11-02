@@ -21,14 +21,21 @@ def launch_setup(context, *args, **kwargs):
 
     common = {'use_sim_time': use_sim}
     wall_detection_cfg = os.path.join(pkg, 'config', 'wall_detection.yaml')
+    controller_cfg = os.path.join(pkg, 'config', 'wall_follow_controller.yaml')
 
     return [
         Node(package='limo_wf', executable='wall_detection', name='wall_detection',
              output='screen',
-                          parameters=[wall_detection_cfg, common, {'laser_frame': fr['laser']}],
+             parameters=[wall_detection_cfg, common, {'laser_frame': fr['laser']}],
              remappings=[('scan', t['scan']),
                          ('wall_info', '/wall_info'),
                          ('wall_markers', '/wall_markers')]),
+
+        Node(package='limo_wf', executable='wall_follow_controller',
+             name='wall_follow_controller', output='screen',
+             parameters=[controller_cfg, common],
+             remappings=[('wall_info', '/wall_info'),
+                         ('cmd_vel', t['cmd_vel'])]),
     ]
 
 
