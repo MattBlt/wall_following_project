@@ -54,6 +54,10 @@ wall_detection:
                                   # minimo su molti punti rumorosi, quindi cade
                                   # sotto il valore vero. Per un anello di velocita'
                                   # e' il verso giusto in cui sbagliare.
+    front_exclude_tol: 0.08        # [m] un punto entro questa distanza dalla retta
+                                  # della parete seguita appartiene a quella parete,
+                                  # non a un ostacolo. Serve per non far scattare
+                                  # la frenata quando il muro e' inclinato.
 
     # --- debug
     publish_markers: true         # MarkerArray su wall_markers per RViz

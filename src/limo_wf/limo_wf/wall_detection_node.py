@@ -49,6 +49,7 @@ class WallDetection(Node):
         self.declare_parameter('max_wall_distance', 2.0)
         self.declare_parameter('max_wall_angle_deg', 60.0)
         self.declare_parameter('front_half_width', 0.20)
+        self.declare_parameter('front_exclude_tol', 0.08)
         self.declare_parameter('switch_margin', 0.10)
         self.declare_parameter('publish_markers', True)
 
@@ -73,6 +74,7 @@ class WallDetection(Node):
             max_wall_distance=gp('max_wall_distance').value,
             max_wall_angle=math.radians(gp('max_wall_angle_deg').value),
             front_half_width=gp('front_half_width').value,
+            front_exclude_tol=gp('front_exclude_tol').value,
             switch_margin=gp('switch_margin').value,
         )
         self.tracker = WallTracker(self.params)

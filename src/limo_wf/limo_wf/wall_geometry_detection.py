@@ -34,6 +34,9 @@ class DetectionParams:
 
     # corridoio frontale: LIMO largo ~0.22 m
     front_half_width: float = 0.20                  # front_clearance       [m]
+    front_exclude_tol: float = 0.08                 # [m] un punto entro questa distanza dalla
+                                                    # retta della parete seguita appartiene a
+                                                    # quella parete, non a un ostacolo
 
     # isteresi sulla scelta della parete
     switch_margin: float = 0.10                     # WallTracker           [m]
@@ -307,12 +310,21 @@ class WallTracker:
         return best
 
 
-def front_clearance(points: np.ndarray, half_width: float) -> float:
-    """Distanza in x del primo ostacolo nel corridoio |y| <= half_width davanti al robot"""
+def front_clearance(points: np.ndarray, half_width: float,
+                    wall: Optional[Segment] = None, tol: float = 0.08) -> float:
+    """Distanza del primo ostacolo nel corridoio |y| <= half_width davanti al robot.
 
+    La parete seguita va ESCLUSA: inseguendola a 30 cm, basta essere inclinati di
+    pochi gradi verso di essa perche' entri nel corridoio frontale e venga scambiata
+    per un ostacolo. Senza l'esclusione, su uno smusso a 45 gradi il robot vira
+    invece di seguire la piega, e la virata si spezza in piu' pezzi.
+    """
     if len(points) == 0:
         return math.inf
-    ahead = points[(points[:, 0] > 0.0) & (np.abs(points[:, 1]) <= half_width)]
+    m = (points[:, 0] > 0.0) & (np.abs(points[:, 1]) <= half_width)
+    if wall is not None:
+        m &= np.abs(points @ wall.normal - wall.offset) > tol
+    ahead = points[m]
     return float(ahead[:, 0].min()) if len(ahead) else math.inf
 
 
@@ -320,10 +332,11 @@ def detect_wall(points: np.ndarray, params: DetectionParams,
                 selector: Optional[WallTracker] = None) -> WallEstimate:
     """Dai punti della scansione (in base_link) alla stima della parete seguita"""
 
-    front = front_clearance(points, params.front_half_width)
     lateral = points[side_sector_mask(points, params.side, params.sector_half_width)]
     segments = extract_segments(lateral, params)
     wall = selector.select(segments) if selector is not None else select_wall(segments, params)
+    front = front_clearance(points, params.front_half_width, wall,
+                            params.front_exclude_tol)
     if wall is None:
         return WallEstimate(detected=False, front_distance=front, segments=segments)
     return WallEstimate(
