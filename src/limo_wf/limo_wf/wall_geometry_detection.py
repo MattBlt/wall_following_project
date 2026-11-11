@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import math
 from typing import Sequence, Tuple, List, Optional
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 
 import numpy as np
 
@@ -27,10 +27,14 @@ class DetectionParams:
     merge_threshold: float = 0.025                   # merge_collinear       [m]
     min_points: int = 8                             # split_segments
     min_segment_length: float = 0.30                # scarta segmenti corti [m]
+    continuation_min_length: float = 0.10           # detect_wall           [m]
+    continuation_angle_tol: float = math.radians(6.0)   # detect_wall       [rad]
+    continuation_offset_tol: float = 0.03           # detect_wall           [m]
 
     # plausibilita' della parete seguita
     max_wall_distance: float = 2.0                  # select_wall           [m]
     max_wall_angle: float = math.radians(60.0)      # select_wall           [rad]
+    corner_max_distance: float = 0.60               # follow_reference      [m]
 
     # corridoio frontale: LIMO largo ~0.22 m
     front_half_width: float = 0.20                  # front_clearance       [m]
@@ -333,7 +337,16 @@ def detect_wall(points: np.ndarray, params: DetectionParams,
     """Dai punti della scansione (in base_link) alla stima della parete seguita"""
 
     lateral = points[side_sector_mask(points, params.side, params.sector_half_width)]
-    segments = extract_segments(lateral, params)
+    if selector is not None:
+        short = replace(params, min_segment_length=params.continuation_min_length)
+        cur = selector.current
+        segments = [seg for seg in extract_segments(lateral, short)
+                    if seg.length >= params.min_segment_length
+                    or (cur is not None
+                        and float(seg.normal @ cur[0]) > math.cos(params.continuation_angle_tol)
+                        and abs(seg.offset - cur[1]) < params.continuation_offset_tol)]
+    else:
+        segments = extract_segments(lateral, params)
     wall = selector.select(segments) if selector is not None else select_wall(segments, params)
     front = front_clearance(points, params.front_half_width, wall,
                             params.front_exclude_tol)
@@ -350,6 +363,56 @@ def detect_wall(points: np.ndarray, params: DetectionParams,
         wall=wall,
         segments=segments,
     )
+
+
+def tangent_angle(c):
+    """Orientamento della tangente alla circonferenza centrata nel robot che passa
+    per c, con la stessa convenzione di Segment.angle (tangente con x >= 0)."""
+    t = np.array([c[1], -c[0]]) / np.linalg.norm(c)
+    if t[0] < 0:
+        t = -t
+    return math.atan2(t[1], t[0])
+
+
+def follow_reference(points, wall, distance, angle, side, max_distance, ahead_tol=0.10,
+                     was_corner=False, keep_tol=0.10):
+    """Riferimento da inseguire: (distanza, angolo, corner) oppure None.
+    - parete presente e piede oltre un estremo c: se c è davanti al robot
+      (c_x >= ahead_tol) si segue la retta, (distance, angle, False);
+      altrimenti c è lo spigolo, (|c|, tangent_angle(c), True);
+      un estremo posteriore (x minore dell'altro) vale come spigolo solo se was_corner;
+    - parete presente e piede oltre un estremo: l'estremo c è lo spigolo,
+      (|c|, tangent_angle(c), True);
+    - parete assente: punto della scansione più vicino sul lato seguito;
+      corner = True solo se è già alle spalle del robot (c_x < 0);
+      se era già spigolo (was_corner) resta tale finché c_x < keep_tol;
+      None se non ci sono punti sul lato o il più vicino è oltre max_distance."""
+    if wall is not None:
+        a, b = wall.p_start, wall.p_end
+        e = b - a
+        L = float(np.linalg.norm(e))
+        u = float(np.dot(-a, e) / L)
+        if 0.0 <= u <= L:
+            return distance, angle, False
+        c = a if u < 0.0 else b
+        if c[0] >= ahead_tol:
+            return distance, angle, False
+        altro = b if c is a else a        # l'altro estremo del segmento
+        if c[0] < altro[0] and not was_corner:
+            return distance, angle, False
+        return float(np.linalg.norm(c)), tangent_angle(c), True
+    lato = points[:, 1] > 0.0 if side == SIDE_LEFT else points[:, 1] < 0.0
+    q = points[lato]
+    if len(q) == 0:
+        return None
+    r = np.linalg.norm(q, axis=1)
+    i = int(np.argmin(r))
+    if r[i] > max_distance:
+        return None
+    c = q[i]
+    soglia = keep_tol if was_corner else 0.0
+    corner = bool(c[0] < soglia)
+    return float(r[i]), tangent_angle(c), corner
 
 
 def angle_diff(a: float, b: float) -> float:

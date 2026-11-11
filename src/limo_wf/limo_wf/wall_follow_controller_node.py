@@ -47,6 +47,7 @@ class WallFollowControllerNode(Node):
         self.declare_parameter('front_turn', 0.75)
         self.declare_parameter('v_turn', 0.25)
         self.declare_parameter('turn_radius_min', 0.22)
+        self.declare_parameter('v_orbit', 0.30)
         self.add_on_set_parameters_callback(self.on_param_change)
 
         gp = self.get_parameter
@@ -71,6 +72,7 @@ class WallFollowControllerNode(Node):
             front_turn=gp('front_turn').value,
             v_turn=gp('v_turn').value,
             turn_radius_min=gp('turn_radius_min').value,
+            v_orbit=gp('v_orbit').value,
         )
         self.controller = WallFollowController(self.params)
         self.watchdog_timeout = gp('watchdog_timeout').value
@@ -142,8 +144,8 @@ class WallFollowControllerNode(Node):
             max(1e-3, (self.last_msg_time - self.prev_time).nanoseconds * 1e-9)
         self.prev_time = self.last_msg_time
 
-        cmd = self.controller.update(msg.wall_detected, msg.distance, msg.angle,
-                                     msg.front_distance, dt)
+        cmd = self.controller.update(msg.ref_valid, msg.ref_distance, msg.ref_angle,
+                                     msg.front_distance, dt, msg.ref_corner)
         self.publish(cmd.v, cmd.omega)
 
         if cmd.reason != self.prev_phase:

@@ -77,6 +77,7 @@ class ControlParams:
     front_turn: float = 0.75           # [m] sotto questa distanza frontale parte la virata ad arco
     v_turn: float = 0.25               # [m/s] velocita' lungo l'arco
     turn_radius_min: float = 0.22      # [m] raggio minimo dell'arco
+    v_orbit: float = 0.30              # [m/s] velocita' massima attorno allo spigolo
 
 
 @dataclass
@@ -135,8 +136,8 @@ class WallFollowController:
         v = math.sqrt(2.0 * self.decel() * (front - p.front_stop))
         return max(p.v_floor, min(p.v_nominal, v))
 
-    def update(self, wall_detected, distance, angle, front_distance, dt):
-        cmd = self._compute(wall_detected, distance, angle, front_distance, dt)
+    def update(self, wall_detected, distance, angle, front_distance, dt, corner=False):
+        cmd = self._compute(wall_detected, distance, angle, front_distance, dt, corner)
         if cmd.v <= 0.0:
             v = 0.0                      # fermate e rotazioni sul posto: subito
         else:
@@ -151,18 +152,20 @@ class WallFollowController:
         return Command(v, omega, cmd.active, cmd.reason)
 
     def _compute(self, wall_detected: bool, distance: float, angle: float,
-                 front_distance: float, dt: float) -> Command:
+                 front_distance: float, dt: float, corner=False) -> Command:
         self.arc_active = False
         p = self.params
         s = 1.0 if p.side == SIDE_LEFT else -1.0
         front = front_distance if math.isfinite(front_distance) else math.inf
         ok = wall_detected and math.isfinite(distance) and math.isfinite(angle)
 
-        if self.phase != Phase.LOST and p.front_stop <= front < p.front_turn:
+        turning_away = self.phase == Phase.TURN and self.turn_sign == -s
+        arc_exit = p.front_turn + (p.front_release if turning_away else 0.0)
+        if self.phase != Phase.LOST and p.front_stop <= front < arc_exit:
             if self.phase != Phase.TURN or self.turn_sign != -s:
                 self.phase, self.turn_sign, self.turned = Phase.TURN, -s, 0.0
             R = max(p.turn_radius_min, front - p.d_ref)
-            v = min(p.v_turn, self.cruise_speed(front))
+            v = p.v_turn
             omega = self.turn_sign * v / R
             self.turned += abs(omega) * dt
             self.arc_active = True
@@ -175,7 +178,6 @@ class WallFollowController:
         # smette appena front risale sopra front_stop — a quel punto il muro vecchio
         # e' ancora li' e rientrerebbe subito, oscillando. Serve superare
         # front_stop + front_release.
-        turning_away = self.phase == Phase.TURN and self.turn_sign == -s
         if front < p.front_stop or (turning_away and front < p.front_stop + p.front_release):
             if self.phase == Phase.LOST:
                 return Command(0.0, 0.0, False, Phase.LOST)   # LOST si aggancia
@@ -194,8 +196,12 @@ class WallFollowController:
             self.advanced = 0.0
             self.turned = 0.0
             v = self.cruise_speed(front)
+            if corner:
+                v = min(v, p.v_orbit)
             k_d, k_psi = self.gains()
             omega = s * k_d * (distance - p.d_ref) + k_psi * angle
+            if corner:
+                omega += s * v / distance        # feedforward di curvatura dell'orbita
             omega = max(-p.max_omega, min(p.max_omega, omega))
             return Command(v, omega, True, Phase.FOLLOW)
 

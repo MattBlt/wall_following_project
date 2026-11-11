@@ -45,4 +45,5 @@ wall_follow_controller:
     front_turn: 0.75          # [m] sotto questa distanza frontale parte la virata ad arco
     v_turn: 0.25              # [m/s] velocita' lungo l'arco
     turn_radius_min: 0.22     # [m] raggio minimo dell'arco
+    v_orbit: 0.30             # [m/s] velocita' massima attorno allo spigolo
     max_search_yaw: 2.62      # [rad] ~150 gradini

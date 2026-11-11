@@ -37,10 +37,15 @@ wall_detection:
     min_segment_length: 0.30      # [m] scarta spigoli e oggetti piccoli.
                                   # ATTENZIONE: decide anche la curva piu' stretta
                                   # seguibile (~1 m di raggio).
+    continuation_min_length: 0.10 # [m] tratto piu' corto di min_segment_length accettato
+                                  # solo se continua la parete gia' seguita
+    continuation_angle_tol_deg: 6.0   # [gradi]
+    continuation_offset_tol: 0.03     # [m]
 
     # --- plausibilita' della parete seguita
     max_wall_distance: 2.0        # [m]
     max_wall_angle_deg: 60.0      # oltre: parete frontale, non laterale
+    corner_max_distance: 0.60     # [m] punto isolato piu' lontano di cosi': nessun riferimento
 
     # --- isteresi sulla scelta
     # Senza, al gomito il robot e' equidistante dalle due pareti e la scelta si

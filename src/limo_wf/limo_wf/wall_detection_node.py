@@ -24,6 +24,7 @@ from visualization_msgs.msg import Marker, MarkerArray
 from limo_wf_msgs.msg import WallInfo
 from limo_wf.wall_geometry_detection import (
     SIDE_LEFT, SIDE_RIGHT, DetectionParams, WallTracker, detect_wall, scan_to_points,
+    follow_reference,
 )
 
 
@@ -46,8 +47,12 @@ class WallDetection(Node):
         self.declare_parameter('merge_threshold', 0.025)
         self.declare_parameter('min_points', 8)
         self.declare_parameter('min_segment_length', 0.30)
+        self.declare_parameter('continuation_min_length', 0.10)
+        self.declare_parameter('continuation_angle_tol_deg', 6.0)
+        self.declare_parameter('continuation_offset_tol', 0.03)
         self.declare_parameter('max_wall_distance', 2.0)
         self.declare_parameter('max_wall_angle_deg', 60.0)
+        self.declare_parameter('corner_max_distance', 0.60)
         self.declare_parameter('front_half_width', 0.20)
         self.declare_parameter('front_exclude_tol', 0.08)
         self.declare_parameter('switch_margin', 0.10)
@@ -71,13 +76,18 @@ class WallDetection(Node):
             merge_threshold=gp('merge_threshold').value,
             min_points=gp('min_points').value,
             min_segment_length=gp('min_segment_length').value,
+            continuation_min_length=gp('continuation_min_length').value,
+            continuation_angle_tol=math.radians(gp('continuation_angle_tol_deg').value),
+            continuation_offset_tol=gp('continuation_offset_tol').value,
             max_wall_distance=gp('max_wall_distance').value,
             max_wall_angle=math.radians(gp('max_wall_angle_deg').value),
+            corner_max_distance=gp('corner_max_distance').value,
             front_half_width=gp('front_half_width').value,
             front_exclude_tol=gp('front_exclude_tol').value,
             switch_margin=gp('switch_margin').value,
         )
         self.tracker = WallTracker(self.params)
+        self.last_corner = False
 
         # TF statica laser -> base_link: letta una volta e tenuta in cache
         self.tf_buffer = Buffer()
@@ -137,6 +147,10 @@ class WallDetection(Node):
         points = scan_to_points(msg.ranges, msg.angle_min, msg.angle_increment,
                                 msg.range_min, msg.range_max, self.laser_pose)
         est = detect_wall(points, self.params, self.tracker)
+        ref = follow_reference(points, est.wall, est.distance, est.angle,
+                               self.params.side, self.params.corner_max_distance,
+                               was_corner=self.last_corner)
+        self.last_corner = ref is not None and ref[2]
 
         out = WallInfo()
         out.header.stamp = msg.header.stamp       # il tempo viene dallo scan
@@ -149,6 +163,14 @@ class WallDetection(Node):
         out.segment_length = float(est.segment_length)
         out.inlier_count = int(est.inlier_count)
         out.fit_residual = float(est.fit_residual)
+        if ref is None:
+            out.ref_valid = False
+            out.ref_distance = math.nan
+            out.ref_angle = math.nan
+            out.ref_corner = False
+        else:
+            out.ref_valid = True
+            out.ref_distance, out.ref_angle, out.ref_corner = ref
         self.pub.publish(out)
 
         if not est.detected:
