@@ -1,10 +1,23 @@
-architettura_tesi_wall_following_slam_finale.png
+# --- prodotti di colcon (si rigenerano con colcon build)
 build/
 install/
 log/
+
+# --- dati delle prove: bag, log, CSV e figure generate
+# (si rigenerano dalle bag; le bag si salvano a parte, non in git)
+analisi/dati/
+
+# --- ambiente Python di uv (si ricrea con uv sync)
+analisi/.venv/
+
+# --- cache di Python
 __pycache__/
 *.pyc
-analisi/.venv/
-analisi/dati/**/*.db3
-analisi/dati/**/metadata.yaml
-analisi/dati/*.log
+
+# --- editor e sistema
+.vscode/
+*.swp
+*~
+.DS_Store
+
+architettura_tesi_wall_following_slam_finale.png

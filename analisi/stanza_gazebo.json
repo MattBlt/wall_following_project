@@ -1,0 +1,9 @@
+{
+  "nome": "closed_room (Gazebo)",
+  "frame": "odom",
+  "nota": "Facce interne delle pareti, ricostruite il 6/11/2026 dalla bag 'oscillazione' proiettando /scan con /odom. Valide finché il robot nasce nella stessa posa del launch.",
+  "vertici": [
+    [0.075, -7.925], [6.925, -7.925], [6.925, -4.925], [11.925, -4.925],
+    [11.925, -0.031], [8.969, 2.925], [5.075, 2.925], [5.075, -0.075], [0.075, -0.075]
+  ]
+}
