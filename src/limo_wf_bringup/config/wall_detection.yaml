@@ -12,7 +12,6 @@ wall_detection:
     # --- lato seguito e frame
     side: left                    # 'left' | 'right'. Decide anche il verso del giro:
                                   # muro a sinistra -> giro orario.
-    base_frame: base_link         # in questo modello e' padre di base_footprint
     laser_frame: ''               # vuoto = usa il frame dichiarato dallo scan
 
     # --- settore laterale

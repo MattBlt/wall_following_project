@@ -141,7 +141,7 @@ class WallFollowControllerNode(Node):
             return
 
         dt = 0.125 if self.prev_time is None else \
-            max(1e-3, (self.last_msg_time - self.prev_time).nanoseconds * 1e-9)
+            min(0.25, max(1e-3, (self.last_msg_time - self.prev_time).nanoseconds * 1e-9))
         self.prev_time = self.last_msg_time
 
         cmd = self.controller.update(msg.ref_valid, msg.ref_distance, msg.ref_angle,

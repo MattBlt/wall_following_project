@@ -8,7 +8,7 @@ topics:
     depth_points:       /limo_camera/camera_points
 
 frames:
-    base:               base_link
+    base:               base_link                       # in questo modello e' padre di base_footprint
     odom:               odom
     laser:              laser_link
     camera:             depth_link

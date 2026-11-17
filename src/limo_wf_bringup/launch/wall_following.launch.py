@@ -26,7 +26,8 @@ def launch_setup(context, *args, **kwargs):
     return [
         Node(package='limo_wf', executable='wall_detection', name='wall_detection',
              output='screen',
-             parameters=[wall_detection_cfg, common, {'laser_frame': fr['laser']}],
+             parameters=[wall_detection_cfg, common,
+                        {'laser_frame': fr['laser'], 'base_frame': fr['base']}],
              remappings=[('scan', t['scan']),
                          ('wall_info', '/wall_info'),
                          ('wall_markers', '/wall_markers')]),
@@ -42,6 +43,6 @@ def launch_setup(context, *args, **kwargs):
 def generate_launch_description():
     return LaunchDescription([
         DeclareLaunchArgument('topic_map', default_value='topics_sim.yaml'),
-        DeclareLaunchArgument('use_sim_time', default_value='true'),
+        DeclareLaunchArgument('use_sim_time', default_value='false'),
         OpaqueFunction(function=launch_setup),
     ])
