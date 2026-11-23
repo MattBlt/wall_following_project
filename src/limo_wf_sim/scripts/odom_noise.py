@@ -34,6 +34,7 @@ import math
 import numpy as np
 import rclpy
 from rclpy.node import Node
+from rclpy.time import Time
 from nav_msgs.msg import Odometry
 
 
@@ -72,6 +73,9 @@ class OdomNoise(Node):
         self.prev = None
         self.cum = [0.0, 0.0]       # archi veri cumulati, sinistra e destra
         self.last_read = [0, 0]     # ultime letture dell'encoder, in tacche
+        self.prev_stamp = None      # timestamp del messaggio precedente [s]
+        self.vx = 0.0               # velocita' lineare stimata [m/s]
+        self.wz = 0.0               # velocita' angolare stimata [rad/s]
 
         self.create_subscription(Odometry, 'odom', self.on_odom, 10)
         self.pub = self.create_publisher(Odometry, 'odom_noisy', 10)
@@ -89,11 +93,20 @@ class OdomNoise(Node):
     def on_odom(self, msg: Odometry):
         x, y = msg.pose.pose.position.x, msg.pose.pose.position.y
         th = yaw_from_quat(msg.pose.pose.orientation)
+        stamp = Time.from_msg(msg.header.stamp).nanoseconds * 1e-9
 
         if self.prev is None:
             self.x, self.y, self.th = x, y, th
             self.prev = (x, y, th)
+            self.prev_stamp = stamp
             return
+
+        # stesso istante del messaggio precedente (o tempo all'indietro):
+        # nessuna informazione nuova, si scarta senza toccare lo stato
+        dt = stamp - self.prev_stamp
+        if dt <= 0.0:
+            return
+        self.prev_stamp = stamp
 
         px, py, pth = self.prev
         self.prev = (x, y, th)
@@ -123,13 +136,17 @@ class OdomNoise(Node):
         ds_m = (d_right + d_left) / 2.0
         dth_m = (d_right - d_left) / self.L
 
+        # velocita' misurate: dt > 0 garantito dalla guardia sopra
+        self.vx = ds_m / dt
+        self.wz = dth_m / dt
+
         self.th = math.atan2(math.sin(self.th + dth_m), math.cos(self.th + dth_m))
         self.x += ds_m * math.cos(self.th)
         self.y += ds_m * math.sin(self.th)
 
-        self.publish(msg.header)
+        self.publish(msg.header, dt)
 
-    def publish(self, header):
+    def publish(self, header, dt):
         out = Odometry()
         out.header = header
         out.child_frame_id = 'base_link'
@@ -138,6 +155,21 @@ class OdomNoise(Node):
         qz, qw = quat_from_yaw(self.th)
         out.pose.pose.orientation.z = qz
         out.pose.pose.orientation.w = qw
+
+        # twist nel frame del robot (child_frame_id)
+        out.twist.twist.linear.x = self.vx
+        out.twist.twist.linear.y = 0.0      # vincolo anolonomo: scelta esplicita
+        out.twist.twist.angular.z = self.wz
+
+        #covarianza 6x6 della twist, ordine (vx, vy, vz, wx, wy,wz)
+        var_read = self.tick_sigma **2
+        a2 = self.arc_per_tick ** 2
+        cov = [0.0] * 36
+        cov[0] = var_read *a2 /dt ** 2
+        cov[7] = 1e-4
+        cov[35] = 4.0 *var_read * a2 / (self.L ** 2 * dt **2)
+        out.twist.covariance = cov
+        
         self.pub.publish(out)
 
 

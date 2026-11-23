@@ -6,9 +6,14 @@ topics:
     imu:                /imu
     cmd_vel:            /cmd_vel
     depth_points:       /camera/depth/points
+    # ingressi dell'EKF: in simulazione i topic con il modello d'errore,
+    # sul robot quelli della piattaforma
+    ekf_odom:           /odom
+    ekf_imu:            /imu
 
 frames:
     base:               base_link
     odom:               odom
+    map:                map
     laser:              laser_link
     camera:             camera_depth_frame

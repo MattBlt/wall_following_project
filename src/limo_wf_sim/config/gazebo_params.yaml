@@ -1,0 +1,5 @@
+# frequenza di /clock: col default di 10 Hz i timer dei nodi con use_sim_time
+# non superano i 10 Hz (EKF a 50 Hz). Solo simulazione.
+gazebo:
+  ros__parameters:
+    publish_rate: 200.0

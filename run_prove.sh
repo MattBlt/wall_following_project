@@ -38,13 +38,16 @@ pulisci() {
     pkill -9 gzclient                 >/dev/null 2>&1
     pkill -9 -f "gz camera"           >/dev/null 2>&1
     pkill -9 -f "$NODO"               >/dev/null 2>&1
+    pkill -9 -f imu_noise             >/dev/null 2>&1
+    pkill -9 -f ekf_node              >/dev/null 2>&1
     pkill -9 -f twist_watchdog        >/dev/null 2>&1
     pkill -9 -f square_drive_test     >/dev/null 2>&1
     pkill -9 -f wall_detection        >/dev/null 2>&1
     pkill -9 -f robot_state_publisher >/dev/null 2>&1
     pkill -9 -f joint_state_publisher >/dev/null 2>&1
     local t=0
-    while pgrep -f "$NODO" >/dev/null 2>&1; do
+    while pgrep -f "$NODO" >/dev/null 2>&1 || pgrep -f imu_noise >/dev/null 2>&1 ||
+          pgrep -f ekf_node >/dev/null 2>&1; do
         sleep 1
         t=$((t + 1))
         [ "$t" -ge 10 ] && break
@@ -108,6 +111,16 @@ for seed in "$@"; do
             exit 1
         fi
     done
+    until timeout 5 ros2 topic echo --once /odometry/filtered >/dev/null 2>&1 </dev/null; do
+        echo -n "."
+        sleep 1
+        if [ $((SECONDS - inizio)) -ge "$TIMEOUT_AVVIO" ]; then
+            echo " l'EKF non pubblica"
+            tail -15 "$log"
+            ferma "$launch_pid"; pulisci
+            exit 1
+        fi
+    done
     sleep 4            # margine perche' il robot si assesti a terra
     echo " ok"
 
@@ -120,8 +133,24 @@ for seed in "$@"; do
         ferma "$launch_pid"; pulisci
         exit 1
     fi
+    n_proc=$(pgrep -c -f imu_noise 2>/dev/null)
+    n_proc=${n_proc:-0}
+    if [ "$n_proc" -ne 1 ]; then
+        echo "    $n_proc nodi imu_noise attivi invece di 1: prova annullata"
+        pgrep -af imu_noise 2>/dev/null
+        ferma "$launch_pid"; pulisci
+        exit 1
+    fi
+    n_proc=$(pgrep -c -f ekf_node 2>/dev/null)
+    n_proc=${n_proc:-0}
+    if [ "$n_proc" -ne 1 ]; then
+        echo "    $n_proc nodi ekf_node attivi invece di 1: prova annullata"
+        pgrep -af ekf_node 2>/dev/null
+        ferma "$launch_pid"; pulisci
+        exit 1
+    fi
 
-    ros2 bag record -o "$dest" /odom /odom_noisy >>"$log" 2>&1 </dev/null &
+    ros2 bag record -o "$dest" /odom /odom_noisy /imu /imu_noisy /odometry/filtered >>"$log" 2>&1 </dev/null &
     bag_pid=$!
 
     t=0

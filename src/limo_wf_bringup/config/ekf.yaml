@@ -1,0 +1,35 @@
+ekf_filter_node:
+    ros__parameters:
+        # --- temporizzazione --- #
+        frequency: 50.00
+        sensor_timeout: 0.1
+
+        # --- modello planare --- #
+        two_d_mode: true
+
+        # --- frame --- #
+        map_frame: map
+        odom_frame: odom
+        base_link_frame: base_link
+        world_frame: odom
+        publish_tf: true
+
+        # --- odometria delle ruote --- #
+        odom0: odom_noisy
+        odom0_config: [false, false, false,
+                        false, false, false,
+                        true, true, false,
+                        false, false, false,
+                        false, false, false]
+        odom0_differential: false
+        odom0_queue_size: 10
+
+        # --- IMU --- #
+        imu0: imu_noisy
+        imu0_config: [false, false, false,
+                        false, false, false,
+                        false, false, false,
+                        false, false, true,
+                        false, false, false]
+        imu0_differential: false
+        imu0_queue_size: 10

@@ -61,7 +61,9 @@
             <max_wheel_acceleration>1.0</max_wheel_acceleration>
             <command_topic>cmd_vel</command_topic>
             <publish_odom>true</publish_odom>
-            <publish_odom_tf>true</publish_odom_tf>
+            <!-- la TF odom -> base_link la pubblica l'EKF; quella del plugin era ground
+                 truth (odometry_source 1 = WORLD) e finirebbe nello SLAM -->
+            <publish_odom_tf>false</publish_odom_tf>
             <publish_wheel_tf>false</publish_wheel_tf>
             <odometry_topic>odom</odometry_topic>
             <odometry_frame>odom</odometry_frame>

@@ -28,6 +28,7 @@ def generate_launch_description():
         DeclareLaunchArgument('yaw', default_value='0.0'),
         DeclareLaunchArgument('headless', default_value='False'),
         DeclareLaunchArgument('noise_seed', default_value='0'),
+        DeclareLaunchArgument('gyro_bias', default_value='0.001'),
     ]
 
     sim_time = {'use_sim_time': True}
@@ -35,7 +36,8 @@ def generate_launch_description():
     return LaunchDescription(args + [
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(os.path.join(gazebo_ros, 'launch', 'gzserver.launch.py')),
-            launch_arguments={'world': LaunchConfiguration('world')}.items()),
+            launch_arguments={'world': LaunchConfiguration('world'),
+                              'params_file': os.path.join(pkg, 'config', 'gazebo_params.yaml')}.items()),
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(os.path.join(gazebo_ros, 'launch', 'gzclient.launch.py')),
             condition=UnlessCondition(LaunchConfiguration('headless'))),
@@ -52,6 +54,14 @@ def generate_launch_description():
             ExecuteProcess(cmd=['gz', 'camera', '-c', 'user_camera', '-f', 'limo_gazebo'])]),
         Node(package='limo_wf_sim', executable='odom_noise.py', name='odom_noise',
              parameters=[{**sim_time,
-                          'noise_seed': ParameterValue(LaunchConfiguration('noise_seed'),
+                          # il nodo dichiara 'seed'; con 'noise_seed' il valore veniva
+                          # ignorato (seed sempre 0) fino al 23/11
+                          'seed': ParameterValue(LaunchConfiguration('noise_seed'),
+                                                 value_type=int)}]),
+        Node(package='limo_wf_sim', executable='imu_noise.py', name='imu_noise',
+             parameters=[{**sim_time,
+                          'gyro_bias': ParameterValue(LaunchConfiguration('gyro_bias'),
+                                                      value_type=float),
+                          'seed': ParameterValue(LaunchConfiguration('noise_seed'),
                                                  value_type=int)}]),
     ])
